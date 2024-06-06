@@ -9,7 +9,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { MsgType, Sender } from '.prisma/client';
+
 import { ChatService } from './chat.service';
 import { CreateRoomDto } from './dto/creat-room.dto';
 
