@@ -1,0 +1,22 @@
+[
+    {
+      "text": "Question 1 before registration",
+      "options": ["Option 1", "Option 2", "Option 3"],
+      "isPreRegistration": true
+    },
+    {
+      "text": "Question 2 before registration",
+      "options": ["Option A", "Option B", "Option C"],
+      "isPreRegistration": true
+    },
+    {
+        "text": "Question 1 after registration",
+        "options": ["Option 1", "Option 2", "Option 3"],
+        "isPreRegistration": false
+      },
+      {
+        "text": "Question 2 after registration",
+        "options": ["Option A", "Option B", "Option C"],
+        "isPreRegistration": false
+      }
+  ]

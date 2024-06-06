@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  email         String        @unique
+  firstName     String
+  lastName      String
+  userResponses UserResponse[]
+  favoriteCoaches Coach[]  @relation("FavoriteCoaches")
+  rooms                 Room[]              @relation("usermember")
+}
+
+model Coach {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  type CoachType @unique
+  rooms                 Room[]              @relation("coachmember")
+  users User[] @relation("FavoriteCoaches")
+}
+
+enum CoachType {
+  STUDY
+  PARENTAL
+  SPORT
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  question  String
+  userResponses UserResponse[]
+}
+
+model UserResponse {
+  id            Int      @id @default(autoincrement())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        Int
+  question      Question @relation(fields: [questionId], references: [id])
+  questionId    Int
+  response      String
+  @@unique([userId, id])
+}
+
+model Room {
+  id         String       @id @default(uuid())
+  usermember     User[]       @relation("usermember")
+  coachmember     Coach[]       @relation("coachmember")
+  msgs       Message[]
+}
+
+model Message {
+  id            Int       @id @default(autoincrement())
+  time          String
+  msg           String
+  msgType       MsgType
+  sender        Sender
+  senderId      Int
+  room          Room   @relation(fields: [roomId], references: [id])
+  roomId        String
+}
+
+enum MsgType {
+  TEXT
+  IMAGE
+  AUDIO
+}
+
+enum Sender {
+  USER
+  COACH
+}
+// enum Status {
+//   PENDING
+//   PAID
+//   CANCELLED
+// }
+
+
+// model Payment {
+//   id          Int       @id @default(autoincrement())
+//   amount      Int
+//   currency    String
+//   userId      Int
+//   user        User      @relation(fields: [userId], references: [id])
+//   status      String
+//   createdAt   DateTime  @default(now())
+// }
+
+// model Trial {
+//   id        Int      @id @default(autoincrement())
+//   startTime DateTime @default(now())
+//   endTime   DateTime
+//   userId    Int
+//   user      User     @relation(fields: [userId], references: [id])
+// }
+
+// model Option {
+//   id           Int      @id @default(autoincrement())
+//   text         String
+//   question     Question @relation(fields: [questionId], references: [id])
+//   questionId   Int
+// }
