@@ -13,6 +13,9 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "birthDate" TEXT NOT NULL,
+    "pays" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );

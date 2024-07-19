@@ -18,10 +18,16 @@ import { PromptModule } from './prompt/prompt.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatService } from './chat/chat.service';
 import { ChatController } from './chat/chat.controller';
+import { ChatbootModule } from './chatboot/chatboot.module';
+import { ChatbootController } from './chatboot/chatboot.controller';
+import { ChatbootService } from './chatboot/chatboot.service';
+import { ProfileModule } from './profile/profile.module';
+import { AuthModule } from './auth/auth.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [UsersModule, PrismaModule, ConfigModule.forRoot({isGlobal: true}),PromptModule, ChatModule ],
-  controllers: [UsersController, PromptController, ChatController],
-  providers: [UsersService, PromptService, PrismaService, ChatService],
+  imports: [UsersModule,HttpModule, PrismaModule, ConfigModule.forRoot({isGlobal: true}),PromptModule, ChatModule, ChatbootModule, ProfileModule, AuthModule ],
+  controllers: [UsersController, PromptController, ChatController,ChatbootController],
+  providers: [UsersService, PromptService, PrismaService, ChatService, ChatbootService],
 })
 export class AppModule {}

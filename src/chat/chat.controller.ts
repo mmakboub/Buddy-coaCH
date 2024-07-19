@@ -5,6 +5,8 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  Get,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,8 +14,10 @@ import { CreateMessageDto } from './dto/create-message.dto';
 
 import { ChatService } from './chat.service';
 import { CreateRoomDto } from './dto/creat-room.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('Chat')
+@ApiTags('Chat')
 export class ChatController {
   constructor(
     private readonly prisma: PrismaService,
@@ -135,5 +139,30 @@ export class ChatController {
     });
 
     return message;
+  }
+  @Get('get-rooms-for-user/:userId')
+  async getRoomsForUser(@Param('userId') userId: string) {
+    const userIdInt = parseInt(userId, 10);
+    if (isNaN(userIdInt)) {
+      throw new BadRequestException('ID utilisateur invalide.');
+    }
+
+    const rooms = await this.chatService.getRoomsForUser(userIdInt);
+    return rooms;
+  }
+  @Get('get-unique-room/:roomId')
+  async getUniqueRoom(@Param('roomId') roomId: string) {
+    const roomIdInt = parseInt(roomId, 10);
+    if (isNaN(roomIdInt)) {
+      throw new BadRequestException('ID de salle invalide.');
+    }
+
+    const room = await this.chatService.getUniqueRoom(roomIdInt);
+    return room;
+  }
+  @Get('get-all-msg/:roomId')
+  async findAllMsg(@Param('roomId') roomId: string) {
+    const msgs = await this.chatService.findAllMsg(roomId);
+    return msgs;
   }
 }
