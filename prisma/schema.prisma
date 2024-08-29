@@ -19,19 +19,27 @@ model User {
   firstName       String
   lastName        String
   password        String
+  otp             Int?
+  otpExpiry       DateTime?
+  language        String
+  cnxtype         String
+  pictureUrl      String
   birthDate       String
   pays            String
   userResponses   UserResponse[]
   favoriteCoaches Coach[]        @relation("FavoriteCoaches")
   rooms           Room[]         @relation("usermember")
+  calls           Call[]
 }
 
 model Coach {
-  id    Int       @id @default(autoincrement())
-  name  String    @unique
-  type  CoachType @unique
-  rooms Room[]    @relation("coachmember")
-  users User[]    @relation("FavoriteCoaches")
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  pictureUrl String    @unique
+  type       CoachType @unique
+  rooms      Room[]    @relation("coachmember")
+  users      User[]    @relation("FavoriteCoaches")
+  Call       Call[]
 }
 
 enum CoachType {
@@ -64,14 +72,31 @@ model Room {
   msgs        Message[]
 }
 
+model Call {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  coachId   Int
+  coach     Coach    @relation(fields: [coachId], references: [id])
+  callType  CallType
+  startedAt String
+  endedAt   String?
+  duration  String?
+}
+
+enum CallType {
+  AUDIO
+  VIDEO
+}
+
 model Message {
-  id       Int     @id @default(autoincrement())
-  time     String
+  id       Int      @id @default(autoincrement())
+  time     DateTime
   msg      String
   msgType  MsgType
   sender   Sender
   senderId Int
-  room     Room    @relation(fields: [roomId], references: [id])
+  room     Room     @relation(fields: [roomId], references: [id])
   roomId   String
 }
 

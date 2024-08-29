@@ -21,6 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         email: payload.email,
         birthDate: payload.birthDate,
         pays: payload.pays,
+        cnxtype: payload.cnxtype,
       });
       return user;
     } catch (error) {

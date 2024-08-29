@@ -1,8 +1,12 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Delete, Get, Param, NotFoundException, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Delete, Get, Param, NotFoundException, ParseIntPipe, UseGuards, Req, Res } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger'; 
 import { TranslationDto } from './translationDto.dto';
-
+import { AuthGuard} from '@nestjs/passport';
+import { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { verify } from 'crypto';
+import * as jwt from 'jsonwebtoken';
 @ApiTags('User')
 
 @Controller('users')
@@ -65,7 +69,30 @@ export class UsersController {
       return { error: error.message };
     }
   }
+  @Get('getFavoriteCoachesByUserIdfromtoken')
+  async getFavoriteCoachesByUserIdfromtoken(@Req() req, @Res() res: Response) {
+    if (!req.headers.authorization) {
+      throw new HttpException('Authorization header not found', HttpStatus.UNAUTHORIZED);
+    }
+    const token = req.headers.authorization.split(' ')[1];
+    console.log("token" , token)
+    const decodedToken = await this.verifyToken(token);
+    console.log("decodedToken:", decodedToken);
+    const userId = decodedToken.sub; 
+    try {
+      const favoriteCoaches = await this.usersService.getFavoriteCoachesByUserId(userId);
+      console.log("fav:", favoriteCoaches);
+      if (!favoriteCoaches) {
+        return res.status(HttpStatus.OK).json({ message: 'No favorite coaches found' });
+      }
+      return res.status(HttpStatus.OK).json(favoriteCoaches);
+    } 
+    catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({ error: error.message });
+    }
+  }
 
+  
   @Delete('removeFavoriteCoachByName')
   async removeFavoriteCoachByName(
     @Body() data: { userId: number; coachName: string }
@@ -92,6 +119,14 @@ export class UsersController {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  async verifyToken(token: string): Promise<any> {
+    try {
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+      return decoded;
+    } catch (error) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
     }
   }
   @Post('translateandgetmsg')

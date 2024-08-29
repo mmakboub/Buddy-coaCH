@@ -3,10 +3,12 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const fontend_url = configService.get<string>('CORS_URL', 'http://localhost:60228');
+  app.use(cookieParser());
   app.enableCors({
     origin: [fontend_url],
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
@@ -20,9 +22,9 @@ async function bootstrap() {
   .setVersion('1.0')
   .addBearerAuth()
   .build();
-
+  
 const document = SwaggerModule.createDocument(app, config);
 SwaggerModule.setup('api-docs', app, document);
-  await app.listen(configService.get<number>('SERVER_PORT', 4001));
+  await app.listen(configService.get<number>('SERVER_PORT', 3001));
 }
 bootstrap();

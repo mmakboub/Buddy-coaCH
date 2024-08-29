@@ -45,6 +45,10 @@ export class CreateUserDto {
   @ApiProperty({ description: 'Country code of the user in ISO 3166-1 alpha-2 format' })
   @IsNotEmpty()
   @IsString()
-  // @IsISO31661Alpha2()
   pays: string;
+
+  @ApiProperty({ description: 'connexion type of the user' })
+  @IsNotEmpty()
+  @IsString()
+  cnxtype: string;
 }

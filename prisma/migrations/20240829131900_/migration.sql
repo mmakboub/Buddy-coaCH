@@ -2,6 +2,9 @@
 CREATE TYPE "CoachType" AS ENUM ('STUDY', 'PARENTAL', 'SPORT');
 
 -- CreateEnum
+CREATE TYPE "CallType" AS ENUM ('AUDIO', 'VIDEO');
+
+-- CreateEnum
 CREATE TYPE "MsgType" AS ENUM ('TEXT', 'IMAGE', 'AUDIO');
 
 -- CreateEnum
@@ -14,6 +17,11 @@ CREATE TABLE "User" (
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "otp" INTEGER,
+    "otpExpiry" TIMESTAMP(3),
+    "language" TEXT NOT NULL,
+    "cnxtype" TEXT NOT NULL,
+    "pictureUrl" TEXT NOT NULL,
     "birthDate" TEXT NOT NULL,
     "pays" TEXT NOT NULL,
 
@@ -24,6 +32,7 @@ CREATE TABLE "User" (
 CREATE TABLE "Coach" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "pictureUrl" TEXT NOT NULL,
     "type" "CoachType" NOT NULL,
 
     CONSTRAINT "Coach_pkey" PRIMARY KEY ("id")
@@ -55,9 +64,22 @@ CREATE TABLE "Room" (
 );
 
 -- CreateTable
+CREATE TABLE "Call" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "coachId" INTEGER NOT NULL,
+    "callType" "CallType" NOT NULL,
+    "startedAt" TEXT NOT NULL,
+    "endedAt" TEXT,
+    "duration" TEXT,
+
+    CONSTRAINT "Call_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Message" (
     "id" SERIAL NOT NULL,
-    "time" TEXT NOT NULL,
+    "time" TIMESTAMP(3) NOT NULL,
     "msg" TEXT NOT NULL,
     "msgType" "MsgType" NOT NULL,
     "sender" "Sender" NOT NULL,
@@ -92,6 +114,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "Coach_name_key" ON "Coach"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Coach_pictureUrl_key" ON "Coach"("pictureUrl");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Coach_type_key" ON "Coach"("type");
 
 -- CreateIndex
@@ -120,6 +145,12 @@ ALTER TABLE "UserResponse" ADD CONSTRAINT "UserResponse_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "UserResponse" ADD CONSTRAINT "UserResponse_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Call" ADD CONSTRAINT "Call_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Call" ADD CONSTRAINT "Call_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "Coach"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_roomId_fkey" FOREIGN KEY ("roomId") REFERENCES "Room"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

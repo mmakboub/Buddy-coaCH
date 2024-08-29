@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, IsEnum, isIn, isInt } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsEnum, isIn, isInt, IsDateString } from 'class-validator';
 import { MsgType, Sender } from '@prisma/client';
 
 export class CreateMessageDto {
@@ -21,6 +21,6 @@ export class CreateMessageDto {
   @IsString()
   roomId: string;
 
-  @IsString()
+  @IsDateString()
   time: string;
 }

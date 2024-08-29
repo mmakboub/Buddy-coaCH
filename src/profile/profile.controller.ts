@@ -1,75 +1,65 @@
-import { Controller, Patch, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Patch, Body, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { ApiTags } from '@nestjs/swagger';
+import { use } from 'passport';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('profile')
 @ApiTags('Profile')
 export class ProfileController {
-  constructor(private readonly profileService: ProfileService) {}
-
-  @Patch('updateFirstName')
-  async updateFirstName(@Body() data: { id: number; firstName: string }) {
+  constructor(private readonly profileService: ProfileService,
+    private readonly userService: UsersService
+  ) {}
+  @Patch('updateprofile')
+  async updateProfile(@Body() data: { id: number; name?: string; email?: string; password?: string,token:string,pictureUrl?:string }) {
+    console.log("data",data);
     if (!data.id) {
       throw new BadRequestException('User id is required');
     }
-    if (!data.firstName) {
-      throw new BadRequestException('First name is required');
+  
+    const updates = [];
+  
+    if (data.name) {
+      console.log("data.firstName",data.name);
+      updates.push(this.profileService.updateFirstName({ id: data.id, firstName: data.name }));
     }
-    if (data.firstName.length < 2 || data.firstName.length > 10) {
-      throw new BadRequestException('First name should be between 2 and 10 characters');
+    if(data.pictureUrl){  
+      updates.push(this.profileService.updatePictureUrl({ id: data.id, pictureUrl: data.pictureUrl }));
     }
-    if (data.firstName.match(/[^a-zA-Z]/)) {
-      throw new BadRequestException('First name should contain only letters');
+    
+    if (data.email) {
+      updates.push(this.profileService.updateEmail({ id: data.id, email: data.email }));
     }
+    if (data.password) {
+      updates.push(this.profileService.updatePassword({ id: data.id, password: data.password }));
+    }
+  
+    if (updates.length === 0) {
+      throw new BadRequestException('At least one field (firstName, email, password) must be provided');
+    }
+  
+    try {
+      await Promise.all(updates);
+      const updatedUser = await this.userService.getUserById(data.id);
 
-    return await this.profileService.updateFirstName(data);
+      console.log("Returning tokens:", data.token);
+    return { user: updatedUser, token: data.token };
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update profile');
+    }
   }
-
-  @Patch('updateLastName')
-  async updateLastName(@Body() data: { id: number; lastName: string }) {
+  @Patch('updatelanguage')
+  async updatelanguage(@Body() data: { id: number; language: string }) {
     if (!data.id) {
       throw new BadRequestException('User id is required');
     }
-    if (!data.lastName) {
-      throw new BadRequestException('Last name is required');
+    if (!data.language) {
+      throw new BadRequestException('language is required');
     }
-    if (data.lastName.length < 2 || data.lastName.length > 10) {
-      throw new BadRequestException('Last name should be between 2 and 10 characters');
-    }
-    if (data.lastName.match(/[^a-zA-Z]/)) {
-      throw new BadRequestException('Last name should contain only letters');
-    }
+    // if (!data.language.match(/^(en|fr|es)$/)) {
+    //   throw new BadRequestException('Invalid language');
+    // }
 
-    return await this.profileService.updateLastName(data);
-  }
-
-  @Patch('updatePassword')
-  async updatePassword(@Body() data: { id: number; password: string }) {
-    if (!data.id) {
-      throw new BadRequestException('User id is required');
-    }
-    if (!data.password) {
-      throw new BadRequestException('Password is required');
-    }
-    if (data.password.length < 6) {
-      throw new BadRequestException('Password should be at least 6 characters long');
-    }
-
-    return await this.profileService.updatePassword(data);
-  }
-
-  @Patch('updateEmail')
-  async updateEmail(@Body() data: { id: number; email: string }) {
-    if (!data.id) {
-      throw new BadRequestException('User id is required');
-    }
-    if (!data.email) {
-      throw new BadRequestException('Email is required');
-    }
-    if (!/\S+@\S+\.\S+/.test(data.email)) {
-      throw new BadRequestException('Invalid email format');
-    }
-
-    return await this.profileService.updateEmail(data);
+    return await this.profileService.updatelanguage(data);
   }
 }

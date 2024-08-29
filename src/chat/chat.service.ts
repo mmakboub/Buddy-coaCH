@@ -4,6 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ChatService {
+ 
+ 
   
   constructor(private prisma: PrismaService) {
     cloudinary.config({
@@ -52,6 +54,32 @@ export class ChatService {
       console.log(e);
     }
   }
+  async getAllCallsForUser(userIdInt: number) {
+    const calls = await this.prisma.call.findMany({ where: { userId: userIdInt } });  
+    return calls;}
+  async getAllRoomsWithLastMsg(userId: number) {
+    const rooms = await this.prisma.room.findMany({
+      where: {
+        usermember: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+      include: { 
+        coachmember: true, 
+        msgs: {
+          orderBy: {
+            time: 'desc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    return rooms;
+  }
+  
   async getRoomsForUser( userId: number) {
     const rooms = await this.prisma.room.findMany({
       where: {

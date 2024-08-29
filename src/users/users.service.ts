@@ -39,7 +39,7 @@ async getFavoriteCoachesByUserId(userId: number) {
 
 async addFavoriteCoachByName(userId: number, coachName: string) {
   const coachTypes = {
-    kensa: CoachType.PARENTAL,
+    kenza: CoachType.PARENTAL,
     mehdi: CoachType.SPORT,
     zina: CoachType.STUDY
   };
@@ -57,12 +57,13 @@ async addFavoriteCoachByName(userId: number, coachName: string) {
   let coach = await this.prisma.coach.findUnique({
     where: { name: coachName },
   });
-
+  let coachPictureUrl= 'https://res.cloudinary.com/dafjoc7f3/image/upload/v1722269594/urn_aaid_sc_US_18a7fab1-8f7c-45b2-9c08-26b8a671ed31_l2ergv.png';
   if (!coach) {
     coach = await this.prisma.coach.create({
       data: {
         name: coachName,
         type: coachType,
+        pictureUrl: coachPictureUrl,
       },
     });
   }
@@ -105,6 +106,7 @@ async findOrCreateUser(data: {
  email: string;
  birthDate: string;
   pays: string;
+  cnxtype: string;
 }) {
   try {
     let user: User = await this.findUserByEmail(data.email);
@@ -115,6 +117,10 @@ async findOrCreateUser(data: {
         email: data.email,
         birthDate: data.birthDate,
         pays: data.pays,
+        cnxtype: data.cnxtype,
+        language:'en',
+        pictureUrl:'https://res.cloudinary.com/dafjoc7f3/image/upload/v1724936595/360_F_64675209_7ve2XQANuzuHjMZXP3aIYIpsDKEbF5dD_yqevgh.jpg'
+
       });
     }
     return user;
@@ -122,7 +128,7 @@ async findOrCreateUser(data: {
     throw new InternalServerErrorException();
   }
 }
-async createUser(data: { firstName: string; lastName: string; email: string; birthDate: string; pays: string; password?:string }): Promise<User> {
+async createUser(data: { firstName: string; lastName: string; email: string; birthDate: string; pays: string; password?:string , cnxtype:string,language:string, pictureUrl:string}): Promise<User> {
     try {
       const existingUser = await this.prisma.user.findUnique({
         where: { email: data.email },
@@ -139,6 +145,9 @@ async createUser(data: { firstName: string; lastName: string; email: string; bir
           birthDate: data.birthDate,
           pays: data.pays,
           password: data.password,
+          cnxtype: data.cnxtype,
+          language: data.language,
+          pictureUrl: data.pictureUrl,
         },
       });
       return user;

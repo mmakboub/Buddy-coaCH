@@ -24,10 +24,12 @@ import { ChatbootService } from './chatboot/chatboot.service';
 import { ProfileModule } from './profile/profile.module';
 import { AuthModule } from './auth/auth.module';
 import { HttpModule } from '@nestjs/axios';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [UsersModule,HttpModule, PrismaModule, ConfigModule.forRoot({isGlobal: true}),PromptModule, ChatModule, ChatbootModule, ProfileModule, AuthModule ],
+  imports: [UsersModule,HttpModule, PrismaModule, ConfigModule.forRoot({isGlobal: true}),PromptModule, MailModule,ChatModule, ChatbootModule, ProfileModule, AuthModule ],
   controllers: [UsersController, PromptController, ChatController,ChatbootController],
   providers: [UsersService, PromptService, PrismaService, ChatService, ChatbootService],
 })
+
 export class AppModule {}

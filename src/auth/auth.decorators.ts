@@ -22,6 +22,22 @@ export function login() {
         ApiUnauthorizedResponse({ description: 'Unauthorized' }),
     );
 }
+
+
+export function forgotPassword() {
+    return applyDecorators(
+        ApiBearerAuth(),
+        ApiOkResponse({ description: 'Returns the OTP' }),
+        ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    );
+}
+export function resetPassword() {
+    return applyDecorators(
+        ApiBearerAuth(),
+        ApiOkResponse({ description: 'Returns the new password' }),
+        ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+    );
+}
 export function GoogleLogin() {
     return applyDecorators(
         ApiBearerAuth(),
@@ -34,4 +50,9 @@ export function GoogleCallback() {return applyDecorators(
     ApiOkResponse({ description: 'Redirects to frontend URL' }),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),
   );
+ 
+}
+export function logout(){return applyDecorators(
+    ApiOkResponse({ description: 'logged out' }),
+        ApiUnauthorizedResponse({ description: 'failed to logout' }))
 }
