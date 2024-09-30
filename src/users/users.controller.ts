@@ -105,22 +105,131 @@ export class UsersController {
       return { error: error.message };
     }
   }
-  @Delete('deleteUserById/:id')
-  @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiResponse({ status: 200, description: 'User deleted.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
-  @ApiParam({ name: 'id', description: 'ID of the user', type: Number })
-  async deleteUserById(@Param('id', ParseIntPipe) id: number) {
-    try {
-      await this.usersService.deleteUserById(id);
-      return { message: 'User deleted successfully' };
-    } catch (error) {
-      if (error.message === 'User not found') {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+
+  @Delete('haspassword')
+@ApiOperation({ summary: 'Check if user has a password' })
+@ApiResponse({ status: 204, description: 'User has password.' })
+@ApiResponse({ status: 200, description: 'User has no password.' })
+@ApiResponse({ status: 404, description: 'User not found.' })
+@ApiResponse({ status: 400, description: 'Bad request.' })
+@ApiParam({ name: 'id', description: 'ID of the user', type: Number })
+async hasPassword(@Req() req, @Res() res: Response) {
+  try {
+
+    console.log("req.headers.authorization",req.headers.authorization);
+    const token = req.headers.authorization?.split(' ')[1]; // Extract the token from the Authorization header
+    if (!token) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Authorization token is missing',
+      });
     }
+
+    const decodedToken = await this.verifyToken(token); // Assuming you have a verifyToken method
+    const id = decodedToken.sub; // Extract user ID from the decoded token
+
+    if (!id) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'User id is required',
+      });
+    }
+
+    const user = await this.usersService.getUserById(id);
+    if (!user) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    if (user.password) {
+      return res.status(HttpStatus.NO_CONTENT).json({
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'User has password',
+      });
+    } else {
+      await this.usersService.deleteUserById(id);
+      return res.status(HttpStatus.OK).json({
+        statusCode: HttpStatus.OK,
+        message: 'User has no password',
+      });
+    }
+  } catch (error) {
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: error.message,
+    });
   }
+}
+
+@Delete('deleteUserById')
+@ApiOperation({ summary: 'Delete user by ID with password confirmation' })
+@ApiResponse({ status: 200, description: 'User deleted successfully.' })
+@ApiResponse({ status: 401, description: 'Unauthorized - Invalid or missing token.' })
+@ApiResponse({ status: 404, description: 'User not found.' })
+@ApiResponse({ status: 400, description: 'Bad request - Invalid password.' })
+async deleteUserById(@Req() req, @Res() res: Response, @Body() data: { password: string }) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]; // Extract the token
+    if (!token) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'Authorization token is missing',
+      });
+    }
+
+    const decodedToken = await this.verifyToken(token); // Assuming verifyToken decodes the token
+    const userId = decodedToken.sub; // Extract user ID from decoded token
+
+    if (!userId) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'User ID is required',
+      });
+    }
+
+    // Fetch the user by ID
+    const user = await this.usersService.getUserById(userId);
+    if (!user) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    // Validate the provided password with the stored password
+    const isPasswordValid = await this.usersService.validatePassword(data.password, user.password); // Assuming validatePassword checks password
+
+    if (!isPasswordValid) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Invalid password',
+      });
+    }
+
+    // If password is valid, delete the user
+    await this.usersService.deleteUserById(userId);
+
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      message: 'User deleted successfully',
+    });
+
+  } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: error.message,
+    });
+  }
+}
+
   async verifyToken(token: string): Promise<any> {
     try {
       const decoded = await jwt.verify(token, process.env.JWT_SECRET);

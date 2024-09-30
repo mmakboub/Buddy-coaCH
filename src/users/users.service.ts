@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CoachType, User } from '@prisma/client';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -189,6 +190,11 @@ async findUserByEmail(email: string) {
     throw new NotFoundException(`user with ${email} does not exist.`);
   }
 }
+
+async validatePassword(toConfirmPassword: string, UserPassword: string): Promise<boolean> {
+  return bcrypt.compare(toConfirmPassword, UserPassword);
+}
+
 async deleteUserById(id: number) {
   try {
     const user = await this.prisma.user.findUnique({ where: { id } });

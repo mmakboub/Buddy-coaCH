@@ -66,11 +66,13 @@ export class ProfileService {
     if (!existingUser) {
       throw new NotFoundException('User not found');
     }
+    console.log("data.pictureUrl",data.pictureUrl);
+    console.log("data.id",data.id);
     const updatedUser = await this.prisma.user.update({
       where: { id: data.id },
       data: { pictureUrl: data.pictureUrl },
     });
-  
+    console.log("updatedUser",updatedUser);  
     return updatedUser;
   }
 }
